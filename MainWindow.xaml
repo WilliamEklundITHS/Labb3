@@ -15,6 +15,8 @@
             <RowDefinition Height="25" />
             <RowDefinition Height="*" />
             <RowDefinition Height="25" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="25" />
@@ -25,7 +27,8 @@
         </Grid.ColumnDefinitions>
         <ItemsControl Grid.Column ="1" Grid.Row="1" Margin="10">
             <Label>Bokningar</Label>
-            <ListBox Name="listBox"/>
+            <ListBox Name="listBox">
+            </ListBox>
         </ItemsControl>
         <ItemsControl Grid.Column ="2" Grid.Row="1"  Margin="10">
             <DatePicker Name="dp1" SelectedDateChanged="DatePicker_Changed" Margin="10,10,10,10"></DatePicker>
@@ -44,6 +47,12 @@
                 <Label>Bokningsnummer</Label>
                 <TextBox x:Name="BookingTableNumber" Margin="0,5,0,5" />
                 <Button x:Name="btnAdd" Margin="0,5,0,0" Click="ButtonAdd_Click">Boka</Button>
+            </StackPanel>
+        </ItemsControl>
+        <ItemsControl Grid.Column="2" Grid.Row="3" Margin="10">
+            <StackPanel  Margin="5,0,0,0">
+                <Button x:Name="btnList" Margin="0,5,0,0" Click="ButtonList_Click">Visa bokningar</Button>
+                <Button x:Name="btnRemove" Margin="0,5,0,0" Click="ButtonRemove_Click">Avboka</Button>
             </StackPanel>
         </ItemsControl>
     </Grid>
