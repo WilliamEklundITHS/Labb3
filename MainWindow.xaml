@@ -35,7 +35,7 @@
             <ComboBox Name="cb1" SelectedIndex="0" Margin="5,5,5,5" >
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding StringFormat='HH:mm'}"></TextBlock>
+                        <TextBlock Text="{Binding StringFormat='yyyy-MM-dd HH:mm'}"></TextBlock>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
@@ -53,6 +53,7 @@
             <StackPanel  Margin="5,0,0,0">
                 <Button x:Name="btnList" Margin="0,5,0,0" Click="ButtonList_Click">Visa bokningar</Button>
                 <Button x:Name="btnRemove" Margin="0,5,0,0" Click="ButtonRemove_Click">Avboka</Button>
+                <TextBlock Name="TEXTBLOCK"></TextBlock>
             </StackPanel>
         </ItemsControl>
     </Grid>
