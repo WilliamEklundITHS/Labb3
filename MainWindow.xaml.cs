@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace Labb3
 {
-    public partial class MainWindow : Window
+    public partial class MainViewModel : Window
     {
         public class BookingModel
         {
@@ -19,30 +19,51 @@ namespace Labb3
             }
             public override string ToString() { return $"{DateAndTime} {Name} {BookingTableNumber}"; }
         }
+
         public ObservableCollection<DateTime> AvailableHoursList { get; set; }
         public ObservableCollection<BookingModel> BookingsList { get; set; }
         public BookingModel bookingModel { get; set; }
 
-        private int SelectedCbItemIndex() => cb1.SelectedIndex = 0;
+        private void SetSelectedHourIndex()
+        {
+            foreach (var item in BookingsList)
+            {
+                cb1.SelectedIndex = AvailableHoursList.IndexOf(StringToDate(item.DateAndTime));
+            }
+            if (cb1.SelectedIndex == -1)
+            {
+                cb1.SelectedIndex = 0;
+            }
+        }
+
         public string DateToString(DateTime date)
         {
             return date.ToString("yyyy-MM-dd HH:mm");
         }
-        private ObservableCollection<DateTime> UpdateAvailableHoursList(DateTime date)
+        public DateTime StringToDate(string str)
         {
-            AvailableHoursList = new ObservableCollection<DateTime>(Enumerable.Range(8, 12).Select(x => new DateTime(date.Year,
+            bool SuccessfulParse = DateTime.TryParse(str, out DateTime date);
+            if (!SuccessfulParse)
+            {
+                MessageBox.Show("Välj en tid.");
+            }
+            return date;
+        }
+        private ObservableCollection<DateTime> UpdateDateList(DateTime date)
+        {
+            AvailableHoursList = new ObservableCollection<DateTime>(Enumerable.Range(12, 10).Select(x => new DateTime(date.Year,
                 date.Month,
                 date.Day).AddHours(x)));
             return AvailableHoursList;
         }
 
-        public MainWindow()
+        public MainViewModel()
         {
             InitializeComponent();
             DataContext = this;
             listBox.ItemsSource = null;
             cb1.ItemsSource = null;
-            UpdateAvailableHoursList(DateTime.Now);
+            UpdateDateList(DateTime.Now);
             BookingsList = new ObservableCollection<BookingModel>()
             { new BookingModel("2022-11-02 12:00", "Lars", 3),
              new BookingModel("2022-11-05 17:00", "Jane", 7),
@@ -53,23 +74,22 @@ namespace Labb3
             listBox.ItemsSource = BookingsList;
             listBox.Visibility = Visibility.Collapsed;
         }
-        private void ValidateBookingTableNumber()
+
+
+
+        IEnumerable<BookingModel> BookingTableNumbers()
         {
-            IEnumerable<BookingModel> BookingTableNumbers()
+            var CheckForTableNumberDuplicates = BookingsList.Where(
+                x => x.DateAndTime == bookingModel.DateAndTime &&
+            x.BookingTableNumber == bookingModel.BookingTableNumber);
+            if (CheckForTableNumberDuplicates.Any())
             {
-                var CheckForTableNumberDuplicates = BookingsList.Where(
-                    x => x.DateAndTime == bookingModel.DateAndTime &&
-                x.BookingTableNumber == bookingModel.BookingTableNumber);
-                if (CheckForTableNumberDuplicates.Any())
-                {
-                    MessageBox.Show("Bordet är redan bokat");
-                }
-                return CheckForTableNumberDuplicates;
+                MessageBox.Show("Bordet är redan bokat");
             }
-            if (BookingTableNumbers().ToList().Count > 0) return;
+            return CheckForTableNumberDuplicates;
         }
 
-        private void LimitAvailableHoursList()
+        private void UpdateAvailableHoursList()
         {
             IEnumerable<DateTime> dateList_in_bookingList = from freeHour in AvailableHoursList
                                                             join bookedHour in BookingsList
@@ -84,6 +104,7 @@ namespace Labb3
             }
             cb1.ItemsSource = null;
             cb1.ItemsSource = AvailableHoursList.Except(dateList_in_bookingList);
+            SetSelectedHourIndex();
         }
         private void RemoveBooking()
         {
@@ -96,30 +117,26 @@ namespace Labb3
         }
         public void AddBooking()
         {
-            var parseBookingTableNumber = int.TryParse(BookingTableNumber.Text, out int num);
-
-            if (!parseBookingTableNumber) return;
-
-            var parsedDate = DateTime.Parse(cb1.Text);
-            bookingModel = new BookingModel(DateToString(parsedDate), BookingName.Text, num);
+            var parsedBookingTableNumber = int.TryParse(BookingTableNumber.Text, out int num);
+            if (!parsedBookingTableNumber) return;
+            DateTime date = StringToDate(cb1.Text);
+            try { bookingModel = new BookingModel(DateToString(date), BookingName.Text, num); }
+            catch (Exception ex) { MessageBox.Show(ex.Message); }
 
             if (string.IsNullOrWhiteSpace(BookingName.Text)) return;
-
-            ValidateBookingTableNumber();
+            if (BookingTableNumbers().ToList().Count > 0) return;
+            if (date.Hour == 0) { return; }
             BookingsList.Add(bookingModel);
             BookingName.Clear();
             BookingTableNumber.Clear();
-            SelectedCbItemIndex();
-            LimitAvailableHoursList();
+            UpdateAvailableHoursList();
         }
-
-
         public void DatePicker_Changed(object sender, RoutedEventArgs e)
         {
-            SelectedCbItemIndex();
-            var parsedDate = DateTime.Parse(dp1.Text);
-            UpdateAvailableHoursList(parsedDate);
-            LimitAvailableHoursList();
+            var parsedDate = StringToDate(dp1.Text);
+            UpdateDateList(parsedDate);
+            UpdateAvailableHoursList();
+
         }
         private void ButtonAdd_Click(object sender, RoutedEventArgs e)
         {
@@ -133,7 +150,6 @@ namespace Labb3
         {
             RemoveBooking();
         }
-
-
     }
+
 }
