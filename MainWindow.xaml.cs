@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace Labb3
@@ -13,6 +17,7 @@ namespace Labb3
             public virtual string DateAndTime { get; set; }
             public virtual string Name { get; set; }
             public virtual int BookingTableNumber { get; set; }
+            public BookingModel() { }
             public BookingModel(string selectedDate, string name, int bookingTableNumber)
             {
                 DateAndTime = selectedDate; Name = name; BookingTableNumber = bookingTableNumber;
@@ -71,7 +76,6 @@ namespace Labb3
                 };
 
             cb1.ItemsSource = AvailableHoursList;
-            listBox.ItemsSource = BookingsList;
             listBox.Visibility = Visibility.Collapsed;
         }
 
@@ -115,18 +119,23 @@ namespace Labb3
             }
             foreach (var booking in selectedItems) { BookingsList.Remove(booking); }
         }
-        public void AddBooking()
+        public async void AddBooking()
         {
             var parsedBookingTableNumber = int.TryParse(BookingTableNumber.Text, out int num);
             if (!parsedBookingTableNumber) return;
             DateTime date = StringToDate(cb1.Text);
-            try { bookingModel = new BookingModel(DateToString(date), BookingName.Text, num); }
+            try
+            {
+                bookingModel = new BookingModel(DateToString(date), BookingName.Text, num);
+            }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
 
             if (string.IsNullOrWhiteSpace(BookingName.Text)) return;
             if (BookingTableNumbers().ToList().Count > 0) return;
             if (date.Hour == 0) { return; }
             BookingsList.Add(bookingModel);
+            WriteToJsonFile();
+            await ReadFromJsonFile();
             BookingName.Clear();
             BookingTableNumber.Clear();
             UpdateAvailableHoursList();
@@ -142,14 +151,64 @@ namespace Labb3
         {
             AddBooking();
         }
-        private void ButtonList_Click(object sender, RoutedEventArgs e)
+        private async void ButtonList_Click(object sender, RoutedEventArgs e)
         {
+
             listBox.Visibility = Visibility.Visible;
+            var jsonList = await ReadFromJsonFile();
+            //listBox.ItemsSource = null;
+            //listBox.ItemsSource = jsonList;
+
         }
         private void ButtonRemove_Click(object sender, RoutedEventArgs e)
         {
             RemoveBooking();
         }
+
+        public string JsonFilePath = @"C:/Users/Admin/source/repos/Labb3/JsonObjects/Bookings.json";
+        public async Task<List<BookingModel>> ReadFromJsonFile()
+        {
+            StreamReader streamReader = new StreamReader("Bookings.Json", Encoding.UTF8);
+            var json = await streamReader.ReadToEndAsync();
+            byte[] byteArray = Encoding.UTF8.GetBytes(json);
+            MemoryStream stream = new MemoryStream(byteArray);
+            var jsonData = await JsonSerializer.DeserializeAsync<List<BookingModel>>(stream);
+            return jsonData;
+        }
+        public void WriteToJsonFile()
+        {
+            var content = BookingsList;
+            ToJsonFile.WriteAsync(JsonFilePath, content);
+        }
+        public static class ToJsonFile
+        {
+            private static readonly JsonSerializerOptions _options = new()
+            {
+                WriteIndented = true
+            };
+
+            public static void Utf8BytesWrite(string fileName, object obj)
+            {
+                var utf8Bytes = JsonSerializer.SerializeToUtf8Bytes(obj, _options);
+                File.WriteAllBytes(fileName, utf8Bytes);
+            }
+            public static async Task WriteAsync(string fileName, object obj)
+            {
+                var fileStream = File.Create(fileName);
+                await JsonSerializer.SerializeAsync(fileStream, obj, _options);
+
+            }
+
+            public static async Task SimpleRead(string fileName)
+            {
+                FileStream openStream = File.OpenRead(fileName);
+                var c = await JsonSerializer.DeserializeAsync<object>(openStream);
+                byte[] byteArray = Encoding.UTF8.GetBytes(c.ToString());
+                MemoryStream stream = new MemoryStream(byteArray);
+                await JsonSerializer.DeserializeAsync<List<object>>(stream);
+            }
+        }
     }
+
 
 }

@@ -10,7 +10,6 @@
     <Window.Resources>
     </Window.Resources>
 
-
     <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="25" />
