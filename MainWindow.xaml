@@ -27,7 +27,7 @@
         </Grid.ColumnDefinitions>
         <ItemsControl Grid.Column ="1" Grid.Row="1" Margin="10">
             <Label>Bokningar</Label>
-            <ListBox Name="listBox">
+            <ListBox Name="listBox" SelectionMode="Multiple">
             </ListBox>
         </ItemsControl>
         <ItemsControl Grid.Column ="2" Grid.Row="1"  Margin="10">
@@ -53,7 +53,6 @@
             <StackPanel  Margin="5,0,0,0">
                 <Button x:Name="btnList" Margin="0,5,0,0" Click="ButtonList_Click">Visa bokningar</Button>
                 <Button x:Name="btnRemove" Margin="0,5,0,0" Click="ButtonRemove_Click">Avboka</Button>
-                <TextBlock Name="TEXTBLOCK"></TextBlock>
             </StackPanel>
         </ItemsControl>
     </Grid>
