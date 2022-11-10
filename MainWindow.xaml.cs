@@ -11,7 +11,6 @@ using System.Windows.Controls;
 
 namespace Labb3
 {
-
     public partial class MainViewModel : Window
     {
         public class BookingModel
@@ -33,7 +32,6 @@ namespace Labb3
 
         private void SetSelectedHourIndex()
         {
-
             foreach (var item in BookingsList)
             {
                 cb1.SelectedIndex = AvailableHoursList.IndexOf(DateAndStringHelper.StringToDate(item.DateAndTime));
@@ -48,7 +46,6 @@ namespace Labb3
                 date.Day).AddHours(x)));
             return AvailableHoursList;
         }
-
         public MainViewModel()
         {
             InitializeComponent();
@@ -145,9 +142,8 @@ namespace Labb3
         {
             AddBooking();
         }
-        private async void ButtonList_Click(object sender, RoutedEventArgs e)
+        private void ButtonList_Click(object sender, RoutedEventArgs e)
         {
-            await ToJsonFile.ReadAsync<BookingModel>(GetCurrentDirectory());
             listBox.Visibility = Visibility.Visible;
         }
         private void ButtonRemove_Click(object sender, RoutedEventArgs e)
@@ -157,7 +153,7 @@ namespace Labb3
         public string GetCurrentDirectory()
         {
             string dir = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
-            string file = "TEST.json";
+            string file = "Bookings.json";
             string path = Path.Combine(dir, file); return path;
         }
         private async void ListBox_Loaded(object? sender, EventArgs e)
